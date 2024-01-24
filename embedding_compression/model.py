@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from openai import OpenAI
+from .openai_client import client
 
 # def get_embedding(text, model="davinci-001"):
 #    text = text.replace("\n", " ")
@@ -30,7 +30,7 @@ class CompressedEmbedding(nn.Module):
     def __init__(self, embedding_model):
         super(CompressedEmbedding, self).__init__()
 
-        self.client = OpenAI()
+        self.client = client
         self.embedding_model = embedding_model
         self.embedding_dim = len(self.get_embedding("Lorem Ipsum"))
         
@@ -51,6 +51,3 @@ class CompressedEmbedding(nn.Module):
         x = tanh(self.ff4(x))
         
         return x
-        
-
-model = CompressedEmbedding("text-embedding-ada-002")

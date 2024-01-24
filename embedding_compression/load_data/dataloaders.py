@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 import os
 import json
@@ -16,6 +16,7 @@ class DistributedTrainingDataset(Dataset):
 
         assert os.path.isdir(data_path), f"Invalid path provided: {data_path}"
         all_files = os.listdir(data_path)
+        self.epoch_multiplier = len(all_files)
 
         for file in all_files:
             if not file.endswith(".json") and not file.startswith("."):
@@ -27,7 +28,10 @@ class DistributedTrainingDataset(Dataset):
         with open(self.filepath, "r") as f:
             self.data = json.load(f)
         
-
-
     def __len__(self):
         return len(self.data)
+    
+    def __getitem__(self, idx):
+        return {
+            "text": self.data[idx]['text']
+        }
