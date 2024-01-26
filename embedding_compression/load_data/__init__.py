@@ -1,1 +1,1 @@
-from .dataloaders import DistributedTrainingDataset
+from .distributed_dataset import TextDataset
