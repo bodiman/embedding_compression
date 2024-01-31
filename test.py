@@ -1,5 +1,7 @@
 from embedding_compression import TextDataset
 
+import asyncio
+
 
 # from torch.utils.data import Dataset, DataLoader
 
@@ -11,5 +13,8 @@ from embedding_compression import TextDataset
 from embedding_compression import CompressedEmbedding
 
 embedding_model = CompressedEmbedding(250)
-x = embedding_model.get_embedding("test")
+print(embedding_model.embedding_dim)
+
+x = asyncio.run(embedding_model.get_embedding({"text": ["testing123r454674321rehfglkmdjklnrejlksfd"]}))
 print(x)
+print(x.shape)

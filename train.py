@@ -6,6 +6,8 @@ import torch.optim as optim
 
 from torch.utils.data import DataLoader
 
+import asyncio
+
 model = CompressedEmbedding(250)
 
 criterion = nn.CrossEntropyLoss()
@@ -22,7 +24,14 @@ num_epochs = 10
 for epoch in range(num_epochs):
     model.train()
     for text in train_dataloader:
-        inputs = model.get_embedding(text)
+        """
+            1. Input text of size (B,)
+            2. Break up inputs and tokenize text to get inputs of size (B + ?, d_0)
+            3. Run inputs through model
+            4. Calculate gradient from self-prediction
+        """
+
+        inputs = asyncio.run(model.get_embedding(text))
         inputs = inputs.to(device)
         
         optimizer.zero_grad()
