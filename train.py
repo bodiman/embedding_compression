@@ -8,29 +8,37 @@ from torch.utils.data import DataLoader
 
 import asyncio
 
-model = CompressedEmbedding(250)
+import wandb
 
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="embedding-compression",
+    
+    # track hyperparameters and run metadata
+    config={
+    "learning_rate": 0.0005,
+    "latent_dimension": 1536,
+    "architecture": "autoencoder",
+    "dataset": "tiny-wikipedia-json-file",
+    "epochs": 2,
+    }
+)
+
+model = CompressedEmbedding(wandb.config.latent_dimension)
+
+criterion = nn.MSELoss()
+optimizer = optim.Adam(model.parameters(), lr=wandb.config.learning_rate)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model.to(device)
 
 train_data = TextDataset("./formatted_data.json")
-train_dataloader = DataLoader(dataset=train_data, batch_size=2, shuffle=True)
+train_dataloader = DataLoader(dataset=train_data, batch_size=8, shuffle=True)
 
-num_epochs = 10
-for epoch in range(num_epochs):
+for epoch in range(wandb.config.epochs):
     model.train()
-    for text in train_dataloader:
-        """
-            1. Input text of size (B,)
-            2. Break up inputs and tokenize text to get inputs of size (B + ?, d_0)
-            3. Run inputs through model
-            4. Calculate gradient from self-prediction
-        """
-
+    for i, text in enumerate(train_dataloader):
         inputs = asyncio.run(model.get_embedding(text))
         inputs = inputs.to(device)
         
@@ -40,5 +48,11 @@ for epoch in range(num_epochs):
         
         loss = criterion(reconstruction, inputs)
 
+        if i % 1 == 0:
+            print(f"[{epoch, i}]: {loss: .{4}f}")
+            wandb.log({"MSE": loss})
+
         loss.backward()
         optimizer.step()
+
+wandb.finish()
