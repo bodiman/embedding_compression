@@ -46,7 +46,7 @@ class CompressedEmbedding(nn.Module):
 
     async def get_embedding(self, text_batch):
         text_batch = text_batch['text']
-        text_batch = buffer_text(text_batch, 8000) # model supports maximum of 8000ish tokens. Estimating about 3 characters per token to be safe. Use tiktoken for better precision in future
+        text_batch = buffer_text(text_batch, 3*8000) # model supports maximum of 8000ish tokens. Estimating about 3 characters per token to be safe. Use tiktoken for better precision in future
 
         tasks = [self.client.embeddings.create(input=[text], model=self.embedding_model) for text in text_batch]
         responses = await asyncio.gather(*tasks)
